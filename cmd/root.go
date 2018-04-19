@@ -29,6 +29,7 @@ import (
 	"github.com/spf13/viper"
 	"gopkg.in/src-d/go-git.v4"
 	"path/filepath"
+	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
@@ -46,12 +47,21 @@ var rootCmd = &cobra.Command{
 		r, err := git.PlainOpen(cwd)
 		PanicIfError(err)
 
-		tags, err := r.TagObjects()
+		head, err := r.Head()
 		PanicIfError(err)
-		err = tags.ForEach(func (t *object.Tag) error {
+		cIter, err := r.Log(&git.LogOptions{From: head.Hash()})
+		err = cIter.ForEach(func(c *object.Commit) error {
+			fmt.Println(c)
+			return nil
+		})
+
+		tags, err := r.Tags()
+		PanicIfError(err)
+		err = tags.ForEach(func (t *plumbing.Reference) error {
 			fmt.Println(t)
 			return nil
 		})
+
 		PanicIfError(err)
 
 	},
