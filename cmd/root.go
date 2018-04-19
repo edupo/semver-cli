@@ -29,6 +29,7 @@ import (
 	"github.com/spf13/viper"
 	"gopkg.in/src-d/go-git.v4"
 	"path/filepath"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 var cfgFile string
@@ -40,14 +41,19 @@ var rootCmd = &cobra.Command{
 	Long: `Utils for semantic versioning control and increment encapsulated as a CLI.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cwd , err := filepath.Abs(".")
-		if err != nil {
-			panic(err)
-		}
+		PanicIfError(err)
 
 		r, err := git.PlainOpen(cwd)
-		if err != nil {
-				
-		}
+		PanicIfError(err)
+
+		tags, err := r.TagObjects()
+		PanicIfError(err)
+		err = tags.ForEach(func (t *object.Tag) error {
+			fmt.Println(t)
+			return nil
+		})
+		PanicIfError(err)
+
 	},
 }
 
