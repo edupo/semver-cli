@@ -27,10 +27,8 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"gopkg.in/src-d/go-git.v4"
 	"path/filepath"
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"github.com/edupo/semver-cli/gitWrapper"
 )
 
 var cfgFile string
@@ -41,29 +39,16 @@ var rootCmd = &cobra.Command{
 	Short: "Semantic versioning utility tool",
 	Long: `Utils for semantic versioning control and increment encapsulated as a CLI.`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		// Opening the repo
 		cwd , err := filepath.Abs(".")
 		PanicIfError(err)
-
-		r, err := git.PlainOpen(cwd)
+		git, err := gitWrapper.PlainOpen(cwd)
+		PanicIfError(err)
+		head, err := git.Head()
 		PanicIfError(err)
 
-		head, err := r.Head()
-		PanicIfError(err)
-		cIter, err := r.Log(&git.LogOptions{From: head.Hash()})
-		err = cIter.ForEach(func(c *object.Commit) error {
-			fmt.Println(c)
-			return nil
-		})
-
-		tags, err := r.Tags()
-		PanicIfError(err)
-		err = tags.ForEach(func (t *plumbing.Reference) error {
-			fmt.Println(t)
-			return nil
-		})
-
-		PanicIfError(err)
-
+		fmt.Println(git.Describe(head))
 	},
 }
 
